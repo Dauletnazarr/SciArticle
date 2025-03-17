@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "SciArticle"
+version = "0.1.0"
+description = "Short description of my project"
+authors = ["i.tkachenko@zohomail.eu"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+celery = "^5.4.0"
+redis = "^5.2.1"
+python-telegram-bot = "^22.0"
+psycopg2-binary = "^2.9.10"
+docker = "^7.1.0"
+
+[tool.ruff]
+line-length = 79
+exclude = ["venv", ".venv", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "C90"]
+ignore = ["E203"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.doc8]
+max_line_length = 79
+
+[tool.black]
+line-length = 79
+extend-exclude = "migrations"
+skip-string-normalization = true
+
+[tool.isort]
+multi_line_output = 3
+skip = ["migrations", "venv"]
+line_length = 79
+include_trailing_comma = true
+profile = "black"
+known_third_party = "celery"
