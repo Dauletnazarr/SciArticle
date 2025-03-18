@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Short description of my project"
 authors = ["i.tkachenko@zohomail.eu"]
 
+
 [tool.poetry.dependencies]
 python = "^3.12"
 celery = "^5.4.0"

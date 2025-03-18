@@ -1,5 +1,5 @@
 from celery import Celery
-from app.config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
+from src.config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 
 # Инициализация Celery
 celery_app = Celery('SciArticle', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
