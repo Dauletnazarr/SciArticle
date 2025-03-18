@@ -14,7 +14,7 @@ psycopg2-binary = "^2.9.10"
 docker = "^7.1.0"
 
 [tool.ruff]
-line-length = 79
+line-length = 100
 exclude = ["venv", ".venv", "build", "dist"]
 
 [tool.ruff.lint]
@@ -24,18 +24,10 @@ ignore = ["E203"]
 [tool.ruff.format]
 docstring-code-format = true
 
-[tool.doc8]
-max_line_length = 79
-
-[tool.black]
-line-length = 79
-extend-exclude = "migrations"
-skip-string-normalization = true
-
 [tool.isort]
 multi_line_output = 3
 skip = ["migrations", "venv"]
-line_length = 79
+line_length = 100
 include_trailing_comma = true
 profile = "black"
 known_third_party = "celery"
