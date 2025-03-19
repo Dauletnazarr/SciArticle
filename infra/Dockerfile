@@ -32,3 +32,9 @@ COPY . /app
 
 # Default command (override via docker-compose for Celery worker, beat, etc.)
 CMD ["bash"]
+
+# Create a non-root user, e.g. 'celeryuser'
+RUN useradd -ms /bin/bash celeryuser
+
+# Switch to 'celeryuser'
+USER celeryuser
