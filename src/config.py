@@ -31,7 +31,3 @@ DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST
 # Прочие настройки проекта
 # -----------------------
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 't')
-
-# Временные интервалы (см. требования по удалению запросов и PDF из БД)
-PDF_REQUEST_LIFETIME = 3 * 24 * 3600  # 3 дня в секундах для хранения запросов на PDF
-PDF_VALIDATION_INTERVAL = 60 * 60     # Пример интервала для периодических проверок (например, 1 час)
