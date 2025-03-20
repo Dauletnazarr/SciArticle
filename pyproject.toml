@@ -1,33 +1,26 @@
-[tool.poetry]
-name = "SciArticle"
+[project]
+name = "sciarticle"
 version = "0.1.0"
-description = "Short description of my project"
-authors = ["i.tkachenko@zohomail.eu"]
+description = ""
+authors = [
+    {name = "I. Tkachenko", email = "i.tkachenko@zohomail.eu"},
+    {name = "DmitryBurmagin",email = "dmitryodinov@ya.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "psycopg2-binary (>=2.9.10,<3.0.0)",
+    "celery (>=5.4.0,<6.0.0)",
+    "redis (>=5.2.1,<6.0.0)",
+    "python-telegram-bot (>=22.0,<23.0)",
+    "docker (>=7.1.0,<8.0.0)"
+]
 
 
-[tool.poetry.dependencies]
-python = "^3.12"
-celery = "^5.4.0"
-redis = "^5.2.1"
-python-telegram-bot = "^22.0"
-psycopg2-binary = "^2.9.10"
-docker = "^7.1.0"
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
 
-[tool.ruff]
-line-length = 100
-exclude = ["venv", ".venv", "build", "dist"]
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.2.0"
 
-[tool.ruff.lint]
-select = ["E", "F", "W", "C90"]
-ignore = ["E203"]
-
-[tool.ruff.format]
-docstring-code-format = true
-
-[tool.isort]
-multi_line_output = 3
-skip = ["migrations", "venv"]
-line_length = 100
-include_trailing_comma = true
-profile = "black"
-known_third_party = "celery"
