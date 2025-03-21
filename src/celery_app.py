@@ -16,4 +16,6 @@ celery_app.conf.update(
     worker_concurrency=4,  # Количество параллельных процессов
     task_time_limit=300,  # Жёсткий лимит времени выполнения задачи (в секундах)
     task_soft_time_limit=240,  # Мягкий лимит времени, после которого начинается предупреждение
+    broker_connection_retry_on_startup=True
 )
+celery_app.autodiscover_tasks(["src"])
