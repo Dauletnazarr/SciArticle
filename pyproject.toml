@@ -13,7 +13,10 @@ dependencies = [
     "celery (>=5.4.0,<6.0.0)",
     "redis (>=5.2.1,<6.0.0)",
     "python-telegram-bot (>=22.0,<23.0)",
-    "docker (>=7.1.0,<8.0.0)"
+    "docker (>=7.1.0,<8.0.0)",
+    "sqlalchemy (>=2.0.39,<3.0.0)",
+    "psycopg (>=3.2.6,<4.0.0)",
+    "alembic (>=1.15.1,<2.0.0)"
 ]
 
 
