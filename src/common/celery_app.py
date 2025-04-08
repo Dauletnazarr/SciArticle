@@ -1,6 +1,6 @@
 from celery import Celery
 
-from src.config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
+from src.common.config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 
 # Инициализация Celery
 celery_app = Celery(
