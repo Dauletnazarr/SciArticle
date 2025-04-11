@@ -1,21 +1,14 @@
+# src/common/celery_app.py
+import os
 from celery import Celery
 
-from src.common.config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
+# Point Celery to your Django settings module.
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sciarticle.settings")
 
-# Инициализация Celery
-celery_app = Celery(
-    "SciArticle", broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND
-)
+app = Celery("sciarticle")
 
-# Обновление конфигурации Celery
-celery_app.conf.update(
-    task_routes={
-        # Указываем, что задача example_task должна выполняться в очереди "default"
-        "app.tasks.example_task.example_task": {"queue": "default"},
-    },
-    worker_concurrency=4,  # Количество параллельных процессов
-    task_time_limit=300,  # Жёсткий лимит времени выполнения задачи (в секундах)
-    task_soft_time_limit=240,  # Мягкий лимит времени, после которого начинается предупреждение
-    broker_connection_retry_on_startup=True
-)
-celery_app.autodiscover_tasks(["src"])
+# Read configuration from Django settings, using a 'CELERY_' prefix
+app.config_from_object("django.conf:settings", namespace="CELERY")
+
+# Autodiscover tasks from installed apps (including any 'tasks.py' files).
+app.autodiscover_tasks()
