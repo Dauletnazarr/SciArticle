@@ -1,6 +1,7 @@
 from datetime import timedelta
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 STATUS = (
     ('pending', 'pending'),
@@ -37,6 +38,7 @@ class Request(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk:
+            self.created_at = timezone.now()
             self.expires_at = self.created_at + timedelta(days=3)
         super().save(*args, **kwargs)
 
