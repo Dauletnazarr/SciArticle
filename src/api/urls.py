@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import create_article_request
+from .views import create_doi_request
 
 urlpatterns = [
-    path('request/', create_article_request, name='create_article_request'),
+    path('request/', create_doi_request, name='create_doi_request'),
 ]
