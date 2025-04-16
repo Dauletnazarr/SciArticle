@@ -14,38 +14,13 @@ dependencies = [
     "redis (>=5.2.1,<6.0.0)",
     "python-telegram-bot (>=22.0,<23.0)",
     "docker (>=7.1.0,<8.0.0)",
-    "django (>=5.2,<6.0)",
-    "dotenv (>=0.9.9,<0.10.0)",
+    "django (<4.2)",
+    "dotenv (>=0.9.9,<0.10.0)"]
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=2.0.0,<3.0.0"],
+build-backend = ["poetry.core.masonry.api"]
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^4.2.0"
 ruff = "^0.11.2"
-
-[tool.ruff]
-line-length = 100
-exclude = ["venv", ".venv", "build", "dist"]
-
-[tool.ruff.lint]
-select = ["E", "F", "W", "C90", "Q"]
-ignore = ["E203"]
-
-[tool.ruff.format]
-docstring-code-format = true
-skip-magic-trailing-comma = false
-
-[tool.isort]
-multi_line_output = 3
-skip = ["migrations", "venv"]
-line_length = 100
-include_trailing_comma = true
-profile = "black"
-known_third_party = "celery"
-
-[tool.ruff.lint.flake8-quotes]
-inline-quotes = "double"  # двойные кавычки для строк
-docstring-quotes = "double"  # двойные кавычки для докстрингов
-multiline-quotes = "double"  # двойные кавычки для многострочных строк
