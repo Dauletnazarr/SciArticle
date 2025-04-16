@@ -1,5 +1,11 @@
-from src.common.celery_app import celery_app
+import requests
+from celery import shared_task
 
-@celery_app.task
-def add_numbers(x, y):
-    return x + y
+
+
+@shared_task
+def example_task(url):
+    """Example Celery task that fetches a URL."""
+    response = requests.get(url)
+    return response.status_code
+
