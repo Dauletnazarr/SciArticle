@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from bot.models import Request
+from bot.handlers.models import Request
 
 
 def handle_request_command(command_text: str):
