@@ -3,23 +3,24 @@ name = "sciarticle"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "I. Tkachenko", email = "i.tkachenko@zohomail.eu"},
-    {name = "DmitryBurmagin",email = "dmitryodinov@ya.ru"}
+    { name = "I. Tkachenko", email = "i.tkachenko@zohomail.eu" },
+    { name = "DmitryBurmagin", email = "dmitryodinov@ya.ru" }
 ]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<4.0"
 dependencies = [
     "psycopg2-binary (>=2.9.10,<3.0.0)",
     "celery (>=5.4.0,<6.0.0)",
     "redis (>=5.2.1,<6.0.0)",
     "python-telegram-bot (>=22.0,<23.0)",
     "docker (>=7.1.0,<8.0.0)",
-    "django (<4.2)",
-    "dotenv (>=0.9.9,<0.10.0)"]
+    "Django (<4.2)",
+    "dotenv (>=0.9.9,<0.10.0)",
+    "poetry-core (>=2.0.0,<3.0.0)"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = ["poetry.core.masonry.api"]
+build-backend = ["poetry.core.masonry.API"]
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^4.2.0"
