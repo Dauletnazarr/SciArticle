@@ -1,8 +1,8 @@
 from django.conf import settings
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, MessageHandler, filters
 
-from bot.hendlers.callback_handlers import handle_pdf_verification
-from bot.hendlers.file_handlers import handle_pdf_file
+from bot.handlers.callback_handlers import handle_pdf_verification
+from bot.handlers.file_handlers import handle_pdf_file
 
 
 def setup_bot():

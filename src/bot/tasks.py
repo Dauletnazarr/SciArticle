@@ -1,44 +1,26 @@
-import logging
+from bot.models import Config
+from sciarticle.settings import TELEGRAM_BOT_TOKEN
+from src.celery import app  # наш Celery объект
 
-from celery import shared_task
-from django.conf import settings
-from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
+config = Config.objects.first()
+Z = config.uploads_for_subscription
+H = config.validations_for_subscription
 
-logger = logging.getLogger(__name__)
 
-@shared_task
-def edit_pdf_message(chat_id, message_id, file_id):
-    """Celery task to edit message with PDF verification buttons.
-
-    Args:
-        chat_id: The chat ID where the message was sent
-        message_id: The message ID to edit
-        file_id: The file ID of the PDF document
-
-    """
+@app.task
+def delete_message_task(chat_id, message_id):
+    from telegram import Bot
+    bot = Bot(token=TELEGRAM_BOT_TOKEN)
     try:
-        # Initialize bot with token from settings
-        bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
-
-        # Create inline keyboard with verification buttons
-        keyboard = [
-            [
-                InlineKeyboardButton("Все верно", callback_data=f"pdf_verify_correct_{file_id}"),
-                InlineKeyboardButton("PDF неверный", callback_data=f"pdf_verify_incorrect_{file_id}")
-            ]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-
-        # Edit the message
-        bot.edit_message_text(
-            chat_id=chat_id,
-            message_id=message_id,
-            text="Пожалуйста, проверьте PDF",
-            reply_markup=reply_markup
-        )
-
-        logger.info(f"Successfully edited message {message_id} in chat {chat_id}")
+        bot.delete_message(chat_id=chat_id, message_id=message_id)
     except Exception as e:
-        logger.error(f"Error editing message: {str(e)}")
-        # You might want to retry the task
-        edit_pdf_message.retry(exc=e, countdown=5, max_retries=3)
+        # возможно, сообщение уже удалено или истекло время на удаление
+        print(f"Failed to delete message {message_id}: {e}")
+
+def schedule_pdf_deletion(chat_id: int, message_id: int, delay: int):
+    # Запланировать задачу через Celery
+    delete_message_task.apply_async(args=[chat_id, message_id], countdown=delay)
+
+def schedule_notification_deletion(chat_id: int, message_id: int, delay: int):
+    delete_message_task.apply_async(args=[chat_id, message_id], countdown=delay)
+
