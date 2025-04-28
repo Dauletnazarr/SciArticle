@@ -1,10 +1,9 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from src.bot.models import ChatUser, Config, Notification, PDFUpload, Request, Subscription, Validation
+from bot.models import ChatUser, Config, Notification, PDFUpload, Request, Subscription, Validation
 
 
-# Config admin
 @admin.register(Config)
 class ConfigAdmin(admin.ModelAdmin):
     """Админка для модели Config."""
@@ -13,14 +12,11 @@ class ConfigAdmin(admin.ModelAdmin):
     readonly_fields = ['id']
 
     def has_add_permission(self, request):
-        # Предотвращает создание новых настроек, если одна уже существует
         return not Config.objects.exists()
 
     def has_delete_permission(self, request, obj=None):
-        # Предотвращает удаление настроек
         return False
 
-# Request admin
 @admin.register(Request)
 class RequestAdmin(admin.ModelAdmin):
     """Админка для модели Request."""
@@ -31,7 +27,6 @@ class RequestAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at', 'expires_at']
     list_per_page = 20
 
-# PDFUpload admin
 @admin.register(PDFUpload)
 class PDFUploadAdmin(admin.ModelAdmin):
     """Админка для модели PDFUpload."""
@@ -41,7 +36,6 @@ class PDFUploadAdmin(admin.ModelAdmin):
     search_fields = ['request__doi']
     readonly_fields = ['uploaded_at', 'delete_at']
 
-# Validation admin
 @admin.register(Validation)
 class ValidationAdmin(admin.ModelAdmin):
     """Админка для модели Validation."""
@@ -51,7 +45,6 @@ class ValidationAdmin(admin.ModelAdmin):
     search_fields = ['pdf_upload__request__doi', 'user_id']
     readonly_fields = ['voted_at']
 
-# ChatUser admin
 @admin.register(ChatUser)
 class ChatUserAdmin(admin.ModelAdmin):
     """Админка для модели ChatUser."""
@@ -67,7 +60,6 @@ class ChatUserAdmin(admin.ModelAdmin):
         ('Даты', {'fields': ['date_joined', 'last_login']}),
     ]
 
-# Notification admin
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
     """Админка для модели Notification."""
@@ -77,7 +69,6 @@ class NotificationAdmin(admin.ModelAdmin):
     search_fields = ['user__username', 'user__telegram_id']
     readonly_fields = ['created_at', 'delete_at']
 
-# Subscription admin
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
     """Админка для модели Subscription."""
@@ -98,7 +89,6 @@ class SubscriptionAdmin(admin.ModelAdmin):
         )
     is_active.short_description = 'Статус'
 
-# Настройки интерфейса
 admin.site.site_header = 'Управление научными статьями'
 admin.site.site_title = 'Административная панель'
 admin.site.index_title = 'Панель управления'

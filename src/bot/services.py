@@ -1,13 +1,13 @@
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.utils import timezone
-from dateutil.relativedelta import relativedelta
 from telegram import Bot
-from .models import Config, Subscription
+
+from bot.models import Config, Subscription
 
 
 def check_and_award_subscription(chat_user):
-    """
-    Проверяет, достиг ли пользователь порога загрузок (Z) или проверок (H),
+    """Проверяет, достиг ли пользователь порога загрузок (Z) или проверок (H),
     и выдаёт подписку, если достиг.
     """
     config = Config.objects.first()
@@ -16,13 +16,11 @@ def check_and_award_subscription(chat_user):
 
     awarded = False
 
-    # Порог загрузок (Z)
     z = config.uploads_for_subscription
     if z and chat_user.upload_count and chat_user.upload_count % z == 0:
         award_subscription(chat_user, reason='uploads')
         awarded = True
 
-    # Порог проверок (H)
     h = config.validations_for_subscription
     if h and chat_user.validation_count and chat_user.validation_count % h == 0:
         award_subscription(chat_user, reason='validations')
@@ -32,16 +30,13 @@ def check_and_award_subscription(chat_user):
 
 
 def award_subscription(chat_user, reason):
+    """Создаёт запись Subscription и уведомляет пользователя через Telegram.
     """
-    Создаёт запись Subscription и уведомляет пользователя через Telegram.
-    """
-    # Определяем дату начала подписки: либо сейчас, либо конец предыдущей
     last = Subscription.objects.filter(user=chat_user).order_by('-end_date').first()
     start_date = timezone.now()
     if last and last.end_date > start_date:
         start_date = last.end_date
 
-    # Продление на 1 месяц
     end_date = start_date + relativedelta(months=1)
 
     sub = Subscription.objects.create(
@@ -51,7 +46,6 @@ def award_subscription(chat_user, reason):
         reason=reason
     )
 
-    # Отправляем уведомление через Telegram Bot
     bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
     if chat_user.has_bot:
         bot.send_message(
