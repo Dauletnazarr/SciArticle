@@ -1,12 +1,9 @@
-#!/usr/bin/env python
-
 import logging
 import os
 import sys
 
 import django
 
-# Setup Django environment before importing models
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sciarticle.settings")
 django.setup()
@@ -14,31 +11,23 @@ django.setup()
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, MessageHandler, filters
 
 from src.bot.handlers.callback_handlers import handle_vote_callback
-
-# Import existing handlers
 from src.bot.handlers.doi_request import handle_request
 from src.bot.handlers.file_handlers import handle_pdf_upload
-
-# Import models and tasks
 from src.bot.models import ChatUser, Config, Subscription
 
-# Configure logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# Get bot token from environment
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 
 
-# New command handlers
 async def start(update, context):
     """Start command handler - registers user and sends welcome message."""
     user = update.effective_user
 
-    # Register user or update existing one
     chat_user, created = ChatUser.objects.get_or_create(
         telegram_id=user.id,
         defaults={
@@ -69,7 +58,6 @@ async def stats_command(update, context):
     try:
         user = ChatUser.objects.get(telegram_id=user_id)
 
-        # Get active subscriptions
         active_subs = Subscription.objects.filter(
             user=user,
             end_date__gt=django.utils.timezone.now()
@@ -81,10 +69,8 @@ async def stats_command(update, context):
             days_left = (sub.end_date - django.utils.timezone.now()).days
             sub_status = f"Активная подписка до {sub.end_date.strftime('%d.%m.%Y')} ({days_left} дней)"
 
-        # Get config parameters
         config = Config.get_instance()
 
-        # Calculate progress towards next subscription
         uploads = user.uploads_count
         validations = user.validations_count
         uploads_needed = config.uploads_for_subscription - (uploads % config.uploads_for_subscription)
@@ -133,31 +119,25 @@ def main():
         logger.error("No TELEGRAM_BOT_TOKEN provided")
         return
 
-    # Create application
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
-    # Register command handlers
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("stats", stats_command))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("request", handle_request))
 
-    # Register PDF upload handler
     application.add_handler(MessageHandler(
         filters.Document.PDF, handle_pdf_upload
     ))
 
-    # Register callback query handler
     application.add_handler(CallbackQueryHandler(
         handle_vote_callback, pattern="^vote_"
     ))
 
-    # Log all errors
     application.add_error_handler(lambda update, context:
         logger.error(f"Update {update} caused error: {context.error}")
     )
 
-    # Start the Bot
     application.run_polling()
 
     logger.info("Bot started")

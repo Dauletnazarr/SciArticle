@@ -34,6 +34,7 @@ class ChatUser(AbstractUser):
     class Meta:
         verbose_name = 'пользователь'
         verbose_name_plural = 'Пользователи'
+        app_label = "bot"
 
     def __str__(self):
         return f'{self.telegram_id} {self.username}'
@@ -85,7 +86,6 @@ class PDFUpload(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            # Set delete_at only if validated_at exists
             if self.validated_at:
                 self.delete_at = self.validated_at + timedelta(days=3)
         super().save(*args, **kwargs)
@@ -114,10 +114,8 @@ class Validation(models.Model):
 
     def clean(self):
         from django.core.exceptions import ValidationError
-        # Prevent uploader from validating their own upload
         if self.user == self.pdf_upload.user:
             raise ValidationError("Users cannot validate their own uploads")
-        # Prevent request creator from validating uploads for their request
         if self.user == self.pdf_upload.request.user:
             raise ValidationError("Request creators cannot validate uploads for their own requests")
 
@@ -174,13 +172,11 @@ class Config(models.Model):
     Designed to have only one instance that can be edited through Django Admin.
     """
 
-    # Z parameter - number of uploads needed for a subscription
     uploads_for_subscription = models.PositiveIntegerField(
         default=10,
         help_text="Number of uploads required to earn a subscription"
     )
 
-    # H parameter - number of validations needed for a subscription
     validations_for_subscription = models.PositiveIntegerField(
         default=20,
         help_text="Number of validations (votes) required to earn a subscription"

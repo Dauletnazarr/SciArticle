@@ -1,12 +1,13 @@
 from django.conf import settings
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, MessageHandler, filters
 
-from bot.handlers.callback_handlers import handle_pdf_verification
-from bot.handlers.file_handlers import handle_pdf_file
-
 
 def setup_bot():
     """Set up the Telegram bot with all handlers."""
+    # Import handlers here to avoid circular imports
+    from src.bot.handlers.callback_handlers import handle_pdf_verification
+    from src.bot.handlers.file_handlers import handle_pdf_file
+
     # Create the Application
     application = Application.builder().token(settings.TELEGRAM_BOT_TOKEN).build()
 
@@ -21,5 +22,8 @@ def setup_bot():
 
     return application
 
-# Initialize the bot when the app is loaded
-bot_application = setup_bot()
+
+def get_bot_application():
+    """Get or create the bot application instance."""
+    # This helps avoid circular imports and defers initialization
+    return setup_bot()
