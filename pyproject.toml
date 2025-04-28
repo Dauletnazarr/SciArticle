@@ -16,7 +16,8 @@ dependencies = [
     "docker (>=7.1.0,<8.0.0)",
     "Django (>4.3)",
     "dotenv (>=0.9.9,<0.10.0)",
-    "poetry-core (>=2.0.0,<3.0.0)"]
+    "poetry-core (>=2.0.0,<3.0.0)",
+    "pytest (>=8.3.5,<9.0.0)"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -25,3 +26,8 @@ build-backend = ["poetry.core.masonry.API"]
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^4.2.0"
 ruff = "^0.11.2"
+pytest-django = "^4.11.1"
+pytest-asyncio = "^0.26.0"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "sciarticle.settings"
