@@ -4,7 +4,7 @@ services:
     container_name: sciarticle-db
     restart: always
     env_file:
-      - ../.env
+      - .env
     ports:
       - "5432:5432"
     volumes:
@@ -34,14 +34,14 @@ services:
       - redis
       - postgres
     env_file:
-      - ../.env
+      - .env
     environment:
       - PYTHONPATH=/app
       - DJANGO_SETTINGS_MODULE=sciarticle.settings
     volumes:
       - ..:/app
     working_dir: /app/src
-    command: ["poetry", "run", "celery", "-A", "src.celery_app", "worker", "--loglevel=info"]
+    command: [ "poetry", "run", "celery", "-A", "src.celery_app", "worker", "--loglevel=info" ]
     networks:
       - bot
 
@@ -52,21 +52,17 @@ services:
     container_name: sciarticle-web
     restart: always
     env_file:
-      - ../.env
+      - .env
     environment:
       - PYTHONPATH=/app
       - DJANGO_SETTINGS_MODULE=sciarticle.settings
       - DB_HOST=postgres
       - DB_PORT=5432
     working_dir: /app/src
+    entrypoint: ["/app/src/entrypoint.sh"]
+    command: ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
     volumes:
       - ..:/app
-    command: >
-      sh -c "
-        poetry run python manage.py makemigrations --noinput &&
-        poetry run python manage.py migrate --noinput &&
-        poetry run python manage.py runserver 0.0.0.0:8000
-      "
     ports:
       - "8000:8000"
     depends_on:
@@ -82,10 +78,10 @@ services:
     container_name: sciarticle-bot
     restart: always
     env_file:
-      - ../.env
+      - .env
     environment:
-    - PYTHONPATH=/app
-    - DJANGO_SETTINGS_MODULE=sciarticle.settings
+      - PYTHONPATH=/app
+      - DJANGO_SETTINGS_MODULE=sciarticle.settings
     working_dir: /app/src
     volumes:
       - ..:/app
