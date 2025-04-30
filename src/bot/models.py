@@ -24,7 +24,7 @@ REASON = (
 class ChatUser(AbstractUser):
     """Пользователь."""
 
-    telegram_id = models.BigIntegerField(unique=True)
+    telegram_id = models.BigIntegerField(unique=True, null=True, blank=True)
     username = models.CharField(max_length=25, unique=True, null=True)
     join_date = models.DateTimeField(auto_now_add=True)
     is_in_bot = models.BooleanField(default=False, help_text="Whether user has interacted with the bot directly")
@@ -53,6 +53,9 @@ class Request(models.Model):
     chat_id = models.BigIntegerField()
     user = models.ForeignKey(ChatUser, on_delete=models.SET_NULL, null=True, blank=True,
                             related_name='requests')
+    request_message_id = models.BigIntegerField(
+        help_text="Telegram message_id, в ответ на которое пользователь делал /request"
+    )
 
     class Meta:
         verbose_name = 'запрос'
