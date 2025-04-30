@@ -45,8 +45,60 @@ services:
     networks:
       - bot
 
-volumes:
-  postgres_data:
+  web:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.celery
+    container_name: sciarticle-web
+    restart: always
+    env_file:
+      - ../.env
+    environment:
+      - PYTHONPATH=/app
+      - DJANGO_SETTINGS_MODULE=sciarticle.settings
+      - DB_HOST=postgres
+      - DB_PORT=5432
+    working_dir: /app/src
+    volumes:
+      - ..:/app
+    command: >
+      sh -c "
+        poetry run python manage.py makemigrations --noinput &&
+        poetry run python manage.py migrate --noinput &&
+        poetry run python manage.py runserver 0.0.0.0:8000
+      "
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - bot
+
+  bot:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.celery
+    container_name: sciarticle-bot
+    restart: always
+    env_file:
+      - ../.env
+    environment:
+    - PYTHONPATH=/app
+    - DJANGO_SETTINGS_MODULE=sciarticle.settings
+    working_dir: /app/src
+    volumes:
+      - ..:/app
+    command: [ "poetry", "run", "python", "bot/bot.py" ]
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - bot
 
 networks:
   bot:
+    driver: bridge
+
+volumes:
+  postgres_data:
