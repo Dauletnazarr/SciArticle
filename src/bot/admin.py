@@ -49,15 +49,18 @@ class ValidationAdmin(admin.ModelAdmin):
 class ChatUserAdmin(admin.ModelAdmin):
     """Админка для модели ChatUser."""
 
-    list_display = ['telegram_id', 'username', 'is_in_bot', 'uploads_count', 'validations_count', 'date_joined']
+    list_display = ['telegram_id', 'username', 'is_in_bot', 'upload_count', 'validation_count', 'date_joined']
     list_filter = ['is_in_bot', 'date_joined']
     search_fields = ['telegram_id', 'username']
     readonly_fields = ['date_joined']
     fieldsets = [
-        ('Основная информация', {'fields': ['username', 'telegram_id', 'password']}),
-        ('Статистика', {'fields': ['uploads_count', 'validations_count', 'is_in_bot']}),
-        ('Права доступа', {'fields': ['is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions']}),
-        ('Даты', {'fields': ['date_joined', 'last_login']}),
+        ("Основная информация", {"fields": ["username", "telegram_id", "password"]}),
+        ("Статистика", {"fields": ["upload_count", "validation_count", "is_in_bot"]}),
+        (
+            "Права доступа",
+            {"fields": ["is_active", "is_staff", "is_superuser", "groups", "user_permissions"]},
+        ),
+        ("Даты", {"fields": ["date_joined", "last_login"]}),
     ]
 
 @admin.register(Notification)

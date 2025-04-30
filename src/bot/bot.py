@@ -3,17 +3,26 @@ import os
 import sys
 
 import django
+from asgiref.sync import sync_to_async
+from telegram import Update
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sciarticle.settings")
 django.setup()
 
-from telegram.ext import Application, CallbackQueryHandler, CommandHandler, MessageHandler, filters
+from telegram.ext import (
+    Application,
+    CallbackQueryHandler,
+    CommandHandler,
+    ContextTypes,
+    MessageHandler,
+    filters,
+)
 
-from src.bot.handlers.callback_handlers import handle_vote_callback
-from src.bot.handlers.doi_request import handle_request
-from src.bot.handlers.file_handlers import handle_pdf_upload
-from src.bot.models import ChatUser, Config, Subscription
+from bot.handlers.callback_handlers import handle_vote_callback
+from bot.handlers.doi_request import handle_request
+from bot.handlers.file_handlers import handle_pdf_upload
+from bot.models import ChatUser, Config, Subscription
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -23,12 +32,27 @@ logger = logging.getLogger(__name__)
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 
+get_or_create_user = sync_to_async(
+    ChatUser.objects.get_or_create,
+    thread_sensitive=True
+)
 
-async def start(update, context):
+get_user = sync_to_async(ChatUser.objects.get, thread_sensitive=True)
+get_active_subs = sync_to_async(
+    lambda user: list(
+        Subscription.objects
+            .filter(user=user, end_date__gt=django.utils.timezone.now())
+            .order_by('-end_date')
+    ),
+    thread_sensitive=True
+)
+get_config = sync_to_async(Config.get_instance, thread_sensitive=True)
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start command handler - registers user and sends welcome message."""
     user = update.effective_user
 
-    chat_user, created = ChatUser.objects.get_or_create(
+    chat_user, created = await get_or_create_user(
         telegram_id=user.id,
         defaults={
             'username': user.username or user.first_name,
@@ -38,7 +62,7 @@ async def start(update, context):
 
     if not chat_user.is_in_bot:
         chat_user.is_in_bot = True
-        chat_user.save()
+        await sync_to_async(chat_user.save, thread_sensitive=True)()
 
     welcome_message = (
         f"Привет, {user.first_name}! Я SciArticleBot.\n\n"
@@ -51,28 +75,25 @@ async def start(update, context):
     await update.message.reply_text(welcome_message)
 
 
-async def stats_command(update, context):
+async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handler for the /stats command - shows user statistics."""
     user_id = update.effective_user.id
 
     try:
-        user = ChatUser.objects.get(telegram_id=user_id)
+        user = await get_user(telegram_id=user_id)
 
-        active_subs = Subscription.objects.filter(
-            user=user,
-            end_date__gt=django.utils.timezone.now()
-        ).order_by('-end_date')
+        active_subs = await get_active_subs(user)
 
         sub_status = "Нет активных подписок"
-        if active_subs.exists():
-            sub = active_subs.first()
+        if active_subs:
+            sub = active_subs[0]
             days_left = (sub.end_date - django.utils.timezone.now()).days
             sub_status = f"Активная подписка до {sub.end_date.strftime('%d.%m.%Y')} ({days_left} дней)"
 
-        config = Config.get_instance()
+        config = await get_config()
 
-        uploads = user.uploads_count
-        validations = user.validations_count
+        uploads = user.upload_count
+        validations = user.validation_count
         uploads_needed = config.uploads_for_subscription - (uploads % config.uploads_for_subscription)
         validations_needed = config.validations_for_subscription - (validations % config.validations_for_subscription)
 
@@ -94,7 +115,7 @@ async def stats_command(update, context):
         )
 
 
-async def help_command(update, context):
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handler for the /help command."""
     help_text = (
         "🔍 *SciArticleBot* - бот для поиска научных статей\n\n"
@@ -134,9 +155,10 @@ def main():
         handle_vote_callback, pattern="^vote_"
     ))
 
-    application.add_error_handler(lambda update, context:
-        logger.error(f"Update {update} caused error: {context.error}")
-    )
+    async def error_handler(update, context):
+            logger.error(f"Update {update} caused error: {context.error}", exc_info=context.error)
+
+    application.add_error_handler(error_handler)
 
     application.run_polling()
 
