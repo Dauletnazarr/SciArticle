@@ -7,7 +7,10 @@ COPY pyproject.toml poetry.lock ./
 RUN pip install poetry && poetry install --no-root
 
 COPY src /app/src
+COPY src/entrypoint.sh /app/src/entrypoint.sh
 
 WORKDIR /app/src
+
+ENTRYPOINT ["/app/src/entrypoint.sh"]
 
 CMD ["poetry", "run", "celery", "-A", "celery_app", "worker", "--loglevel=info"]
