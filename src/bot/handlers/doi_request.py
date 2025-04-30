@@ -78,7 +78,11 @@ async def handle_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # )
     chat_user, _ = await get_or_create_chat_user_async(
         update.effective_user.id,
-        defaults={ ... }
+        defaults={
+            "username": update.effective_user.username or f"user_{update.effective_user.id}",
+            "full_name": update.effective_user.full_name or "",
+            "is_in_bot": True,
+        }
     )
 
     new_request = await create_request_async(
