@@ -195,11 +195,10 @@ def handle_vote_callback_task(
     pdf = PDFUpload.objects.select_related('request','user').get(id=pdf_id)
     req = pdf.request
     if req.user and req.user.telegram_id == voter_id:
-        bot.answer_callback_query(callback_query_id=callback_query_id, text="Вы не можете голосовать по своему запросу.", show_alert=True)
-        return
+        return {"blocked": True, "message": "Вы не можете голосовать по своему запросу."}
+
     if pdf.user.telegram_id == voter_id:
-        bot.answer_callback_query(callback_query_id=callback_query_id, text="Вы не можете голосовать за свой PDF.", show_alert=True)
-        return
+        return {"blocked": True, "message": "Вы не можете голосовать за свой PDF."}
 
     voter, _ = ChatUser.objects.get_or_create(
         telegram_id=voter_id,
