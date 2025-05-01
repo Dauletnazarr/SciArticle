@@ -50,7 +50,9 @@ async def handle_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user=chat_user,
         created_at=timezone.now()
     )
-    except IntegrityError:
+    except IntegrityError as e:
+        logger = logging.getLogger(__name__)
+        logger.exception("IntegrityError occurred while creating a new request: %s", e)
         await update.message.reply_text(
             "❌ Извините, запрос с таким DOI уже существует. Пожалуйста, введите другой DOI."
         )
