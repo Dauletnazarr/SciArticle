@@ -8,6 +8,7 @@ from django.core.files.storage import default_storage
 from telegram import Bot
 
 from bot.models import Config
+from sciarticle.constants import MAX_FILE_SIZE
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +126,7 @@ def handle_pdf_upload_task(
                 f"https://api.telegram.org/file/bot{TELEGRAM_TOKEN}/{file_path}", timeout=30
             ).content
 
-            if len(file_content) > 50 * 1024 * 1024:
+            if len(file_content) > MAX_FILE_SIZE:
                 raise ValueError("File too large")
         except Exception as download_error:
             logger.error(f"File download error: {download_error}")
