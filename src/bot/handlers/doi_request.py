@@ -35,6 +35,13 @@ async def handle_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Пожалуйста, укажите DOI: /request <DOI>")
         return
     doi = context.args[0]
+    if not DOI_PATTERN.match(doi):
+        await update.message.reply_text("Некорректный формат DOI")
+        return
+    if len(doi) > 256:
+        await update.message.reply_text("DOI слишком длинный")
+        return
+
     chat_user, _ = await get_or_create_chat_user_async(
         update.effective_user.id,
         defaults={
