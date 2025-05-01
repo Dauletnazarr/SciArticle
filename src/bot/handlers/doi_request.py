@@ -5,7 +5,14 @@ async def handle_request(update, context):
     if not text.startswith("/request"):
      return
 
-    doi = text.split(" ", 1)[1].strip()
+    parts = text.split(" ", 1)
+    if len(parts) < 2 or not parts[1].strip():
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Error: Please provide a DOI after the /request command.",
+        )
+        return
+    doi = parts[1].strip()
     user = update.effective_user
 
     create_request_task.delay(

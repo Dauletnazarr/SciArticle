@@ -86,17 +86,16 @@ def handle_pdf_upload_task(
 
 
 @shared_task
-def handle_vote_callback_task(callback_data: str, voter_id: int, voter_username: str):
+def handle_vote_callback_task(callback_query_id: str, callback_data: str, voter_id: int, voter_username: str):
     action, pdf_id_str = callback_data.split(":")
     pdf_id = int(pdf_id_str)
     pdf = PDFUpload.objects.select_related('request','user').get(id=pdf_id)
     req = pdf.request
-
     if req.user and req.user.telegram_id == voter_id:
-        bot.answer_callback_query(callback_query_id=None, text="Вы не можете голосовать по своему запросу.", show_alert=True)
+        bot.answer_callback_query(callback_query_id=callback_query_id, text="Вы не можете голосовать по своему запросу.", show_alert=True)
         return
     if pdf.user.telegram_id == voter_id:
-        bot.answer_callback_query(callback_query_id=None, text="Вы не можете голосовать за свой PDF.", show_alert=True)
+        bot.answer_callback_query(callback_query_id=callback_query_id, text="Вы не можете голосовать за свой PDF.", show_alert=True)
         return
 
     voter, _ = ChatUser.objects.get_or_create(
@@ -112,9 +111,10 @@ def handle_vote_callback_task(callback_data: str, voter_id: int, voter_username:
     )
 
     votes = Validation.objects.filter(pdf_upload=pdf)
-    if votes.count() >= 3:
+    total_votes = votes.count()
+    if total_votes >= 3:
         correct = votes.filter(vote=True).count()
-        pdf.is_valid = correct > (votes.count() - correct)
+        pdf.is_valid = correct > (total_votes - correct)
         pdf.validated_at = timezone.now()
         pdf.save()
     return pdf.id
