@@ -1,4 +1,8 @@
+import logging
+
 from bot.tasks import create_request_task
+
+logger = logging.getLogger(__name__)
 
 async def handle_request(update, context):
     text = update.message.text or ""
@@ -22,3 +26,4 @@ async def handle_request(update, context):
          user.id,
          user.username or user.full_name
      )
+    logger.info("Sent create_request_task to Celery for DOI %s", doi)
