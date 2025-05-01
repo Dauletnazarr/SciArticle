@@ -24,6 +24,23 @@ from bot.handlers.doi_request import handle_request
 from bot.handlers.file_handlers import handle_pdf_upload
 from bot.models import ChatUser, Config, Subscription
 
+from telegram.ext import CommandHandler
+from bot.handlers.doi_request import handle_request
+from bot.handlers.file_handlers import handle_pdf_upload
+
+def main():
+    application = (
+        Application
+        .builder()
+        .token(TELEGRAM_TOKEN)
+        .build()
+    )
+
+    application.add_handler(CommandHandler("request", handle_request))
+    application.add_handler(MessageHandler(filters.Document.PDF, handle_pdf_upload))
+    application.add_handler(CallbackQueryHandler(handle_vote_callback, pattern="^vote_"))
+    application.run_polling()
+
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO

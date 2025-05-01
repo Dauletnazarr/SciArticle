@@ -63,6 +63,7 @@ services:
     command: ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
     volumes:
       - ..:/app
+      - media_data:/app/media
     ports:
       - "8000:8000"
     depends_on:
@@ -98,3 +99,4 @@ networks:
 
 volumes:
   postgres_data:
+  media_data:
