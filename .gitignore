@@ -177,3 +177,6 @@ environment.yml
 
 docs/*.pdf
 docs/*.xlsx
+staticfiles
+
+.DS_Store

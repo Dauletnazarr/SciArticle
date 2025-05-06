@@ -7,7 +7,8 @@ from django.utils import timezone
 STATUS = (
     ('pending', 'pending'),
     ('completed', 'completed'),
-    ('expired', 'expired')
+    ('expired', 'expired'),
+    ('removed', 'removed')
 )
 
 TYPE = (
@@ -41,9 +42,9 @@ class ChatUser(AbstractUser):
 
 
 class Request(models.Model):
-    """Запрос на PDF."""
+    """Запрос PDF."""
 
-    doi = models.CharField(max_length=256, unique=True)
+    doi = models.CharField(max_length=256)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     status = models.CharField(
@@ -51,11 +52,14 @@ class Request(models.Model):
         choices=STATUS,
     )
     chat_id = models.BigIntegerField()
-    user = models.ForeignKey(ChatUser, on_delete=models.SET_NULL, null=True, blank=True,
-                            related_name='requests')
-    request_message_id = models.BigIntegerField(
-        help_text="Telegram message_id, в ответ на которое пользователь делал /request"
+    user = models.ForeignKey(
+        ChatUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='requests'
     )
+    message_id = models.IntegerField(default=0)
 
     class Meta:
         verbose_name = 'запрос'

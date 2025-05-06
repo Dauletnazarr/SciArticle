@@ -6,8 +6,7 @@ COPY pyproject.toml poetry.lock ./
 
 RUN pip install poetry && poetry install --no-root
 
-COPY src /app/src
-COPY src/entrypoint.sh /app/src/entrypoint.sh
+COPY ./src /app/src
 
 WORKDIR /app/src
 
