@@ -18,7 +18,7 @@ services:
     container_name: sciarticle_cache
     restart: always
     env_file:
-      - ../.env
+      - .env
     ports:
       - "6379:6379"
     networks:
@@ -27,7 +27,7 @@ services:
   celery:
     build:
       context: ..
-      dockerfile: infra/Dockerfile.celery
+      dockerfile: infra/Dockerfile
     container_name: celery_worker
     restart: always
     depends_on:
@@ -48,7 +48,7 @@ services:
   web:
     build:
       context: ..
-      dockerfile: infra/Dockerfile.celery
+      dockerfile: infra/Dockerfile
     container_name: sciarticle-web
     restart: always
     env_file:
@@ -74,7 +74,7 @@ services:
   bot:
     build:
       context: ..
-      dockerfile: infra/Dockerfile.celery
+      dockerfile: infra/Dockerfile
     container_name: sciarticle-bot
     restart: always
     env_file:

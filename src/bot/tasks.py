@@ -3,9 +3,10 @@ import logging
 import requests
 from celery import shared_task
 from django.db import IntegrityError
+from django.utils import timezone
 from telegram import Bot
 
-from bot.models import Config
+from bot.models import Config, Request, ChatUser
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ TELEGRAM_TOKEN = os.environ['TELEGRAM_BOT_TOKEN']
 SEND_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
 bot = Bot(token=TELEGRAM_TOKEN)
 
+
 def _send_sync(chat_id: int, text: str, reply_to: int = None):
     payload = {'chat_id': chat_id, 'text': text}
     if reply_to is not None:
@@ -28,27 +30,33 @@ def _send_sync(chat_id: int, text: str, reply_to: int = None):
 
 
 @shared_task
-def create_request_task(doi: str, chat_id: int, message_id: int, user_id: int, username: str):
+def request_pdf_task(chat_id, message_id, doi):
     chat_user, _ = ChatUser.objects.get_or_create(
-        telegram_id=user_id,
-        defaults={'username': username, 'is_in_bot': True}
+        telegram_id=chat_id,
+        defaults={'username': f"user_{chat_id}", 'is_in_bot': True}
     )
-    try:
-        req = Request.objects.create(
-            doi=doi,
-            chat_id=chat_id,
-            request_message_id=message_id,
-            status="pending",
-            user=chat_user,
-        )
-        _send_sync(chat_id, f"✅ Принял запрос на DOI {doi}", reply_to=message_id)
 
-    except IntegrityError:
-        req = Request.objects.get(doi=doi)
-        _send_sync(chat_id,
-                   f"❗ Запрос на DOI {doi} уже существует (статус: {req.status}).",
-                   reply_to=message_id)
-    return req.id
+    # Проверка на наличие в базе даных запроса по DOI у пользователя
+    if Request.objects.filter(
+        chat_id=chat_id,
+        doi=doi,
+        status__in=('pending', 'completed')
+    ).exists():
+        logger.info(
+            f"Repeated request from user in chat_id={chat_id}: don't save to db"
+        )
+        return
+
+    # Если статьи нет в базе данных
+    request = Request.objects.create(
+        doi=doi,
+        status='pending',
+        chat_id=chat_id,
+        user=chat_user,
+        message_id=message_id
+    )
+    logger.info(f"Request recorded in the db {request}")
+    return request
 
 
 @shared_task
@@ -89,7 +97,7 @@ def handle_pdf_upload_task(
 def handle_vote_callback_task(callback_query_id: str, callback_data: str, voter_id: int, voter_username: str):
     action, pdf_id_str = callback_data.split(":")
     pdf_id = int(pdf_id_str)
-    pdf = PDFUpload.objects.select_related('request','user').get(id=pdf_id)
+    pdf = PDFUpload.objects.select_related('request', 'user').get(id=pdf_id)
     req = pdf.request
     if req.user and req.user.telegram_id == voter_id:
         bot.answer_callback_query(callback_query_id=callback_query_id, text="Вы не можете голосовать по своему запросу.", show_alert=True)

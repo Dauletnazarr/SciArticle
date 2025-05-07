@@ -20,7 +20,6 @@ from telegram.ext import (
 )
 
 from bot.handlers.callback_handlers import handle_vote_callback
-from bot.handlers.doi_request import handle_request
 from bot.handlers.file_handlers import handle_pdf_upload
 from bot.models import ChatUser, Config, Subscription
 
@@ -40,13 +39,14 @@ get_or_create_user = sync_to_async(
 get_user = sync_to_async(ChatUser.objects.get, thread_sensitive=True)
 get_active_subs = sync_to_async(
     lambda user: list(
-        Subscription.objects
-            .filter(user=user, end_date__gt=django.utils.timezone.now())
-            .order_by('-end_date')
+        Subscription.objects.filter(
+            user=user, end_date__gt=django.utils.timezone.now()
+        ).order_by('-end_date')
     ),
     thread_sensitive=True
 )
 get_config = sync_to_async(Config.get_instance, thread_sensitive=True)
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start command handler - registers user and sends welcome message."""
@@ -121,14 +121,12 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🔍 *SciArticleBot* - бот для поиска научных статей\n\n"
         "*Доступные команды:*\n"
         "/start - начать работу с ботом\n"
-        "/request <DOI> - запросить статью по DOI\n"
         "/stats - показать вашу статистику\n"
         "/help - показать эту справку\n\n"
         "*Как это работает:*\n"
-        "1. Запросите статью по DOI\n"
-        "2. Дождитесь, пока кто-то загрузит PDF\n"
-        "3. Проверьте загруженный PDF голосованием\n"
-        "4. Получайте подписку за загрузки и проверки"
+        "1. Дождитесь, пока кто-то загрузит PDF\n"
+        "2. Проверьте загруженный PDF голосованием\n"
+        "3. Получайте подписку за загрузки и проверки"
     )
 
     await update.message.reply_text(help_text, parse_mode="Markdown")
@@ -145,7 +143,6 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("stats", stats_command))
     application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("request", handle_request))
 
     application.add_handler(MessageHandler(
         filters.Document.PDF, handle_pdf_upload
@@ -156,7 +153,10 @@ def main():
     ))
 
     async def error_handler(update, context):
-            logger.error(f"Update {update} caused error: {context.error}", exc_info=context.error)
+        logger.error(
+            f"Update {update} caused error: {context.error}",
+            exc_info=context.error
+        )
 
     application.add_error_handler(error_handler)
 
