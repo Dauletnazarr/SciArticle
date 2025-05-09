@@ -179,4 +179,10 @@ docs/*.pdf
 docs/*.xlsx
 staticfiles
 
+# .idea
+.idea/
+.vscode
 .DS_Store
+
+static/
+media/
